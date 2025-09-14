@@ -39,15 +39,17 @@ def predict_image_server(numpy_array):
 
 # Function to predict the number in a specific image
 def predict_image(array, model):
-    #transform = PILToTensor()
+    # Ensure proper shape for PyTorch (batch_size, channels, height, width)
     numpy_array = np.array(array, dtype=np.float32).reshape(1, 1, 28, 28)
     image_tensor = torch.from_numpy(numpy_array).to(device)
 
     model.eval()
     with torch.no_grad():
-
-        image_tensor = image_tensor.to(device)
         output = model(image_tensor)
         predicted = output.argmax(1)
-        print(f"Predicted label: {predicted.item()}")
+        confidence = torch.softmax(output, dim=1).max().item()
+
+        print(f"Predicted label: {predicted.item()} (confidence: {confidence:.2f})")
+        print(f"Input range: {numpy_array.min():.3f} to {numpy_array.max():.3f}")
+
         return predicted.item()
